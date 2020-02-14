@@ -30,7 +30,7 @@ The recreational nature of this project means that security is not as high a con
 
 The US Department of Homeland Security provides a document[1] detailing precautions that manufacturers of IoT devices should consider. We will follow the advice of incorporate security at the design phase by choosing secure hardware, using the latest version of Linux (on the main computer) and device firmware (for smaller components like the receiver). We are still not sure of the potential distribution model of BALLS, but their advice of advance security updates and vulnerability management will be followed on the devices that we use for our demonstrations, and updates that patch security vulnerabilities will be automatically installed by nature of running a Linux distribution on the main computer. Since it’s hard to argue a reason not to follow standard security practices, we will follow their advice of build on proven security practices. We will also prioritize security measures according to potential impact by focusing on the security of wireless communications, as that is the main attack vector by which malicious parties could attack a BALLS-driven performance. Since BALLS is a self-contained system that, outside of installing updates, has no need to connect to an external network, promoting transparency across IoT will be a lesser concern. We will be connecting carefully and deliberately by choosing components that are hard to tamper with, as well as avoiding internet connections wherever possible.
 # Assignments
-##Mike Hegarty
+## Mike Hegarty
 * XBee
 * Accelerometer
 * Pattern software
