@@ -15,7 +15,7 @@ greenUpper = (95,255,255)
 
 pts = deque(maxlen=20)
 
-vs = cv2.VideoCapture("5ball.mp4")
+vs = cv2.VideoCapture("test_vids/5ball.mp4")
 time.sleep(1.0)
 
 while True:
@@ -23,8 +23,8 @@ while True:
     frame = frame[1]
     if frame is None:
         break
-    frame = imutils.resize(frame, width=600)
-    frame = imutils.rotate(frame,0)
+    frame = imutils.resize(frame, width=700)
+    frame = imutils.rotate_bound(frame,90)
     blur = cv2.GaussianBlur(frame, (11,11), 0)
     hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
     
@@ -51,7 +51,7 @@ while True:
             pts.appendleft(center)
 
     cv2.imshow("Frame",frame)
-    cv2.imshow("Mask",mask)
+    #cv2.imshow("Mask",mask)
     key = cv2.waitKey(32) & 0xFF
     if key == ord("q"):
         break
