@@ -17,12 +17,10 @@ Information about how the juggler is throwing the balls will be gathered using a
 * **Gradient lighting:** Balls light up in a gradient between two colors based on some characteristic about their flight path. Ex. ball height, ball speed, ball location(left to right), etc.
 * **Color array lighting:** Each location in the frame of the camera corresponds to a different color. As balls pass through a location, they light up to that color. Imagine this with circle juggling:
 
-![circle juggling](circlejuggle.gif =100x100)
 <img src="circlejuggle.gif" width="256" height="256" title="Circle Juggle">
 More info on this can be seen [here](https://www.libraryofjuggling.com/Tricks/3balltricks/Shower.html) where if done fast enough the balls would form a colorful circle.
 An example of what this might look like is something like how the textures of clothing is animated on the Cartoon Network show *Chowder* as you can see here:
 
-![Chowder Texture](tenor.gif =100x100)
-
+<img src="tenor.gif" width="332" height="186" title="Chowder">
 As you can see, the texture is fixed in the frame, and as the character moves the texture stays in place. This is the idea we would like to implement, where you have a color array/pattern and as the balls pass through each of the regions the color is updated (ie. as the balls pass up the left side they are blue, as they go across the top they transition to red, and as the fall down the right side they transition to green, and repeat the cycle as they are circle juggled)
 * **Color array lighting++:** Same as color array lighting but the color array rotates.
