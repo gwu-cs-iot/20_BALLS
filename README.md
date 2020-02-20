@@ -21,6 +21,7 @@ Information about how the juggler is throwing the balls will be gathered using a
 
 More info on this can be seen [here](https://www.libraryofjuggling.com/Tricks/3balltricks/Shower.html) where if done fast enough the balls would form a colorful circle.
 An example of what this might look like is something like how the textures of clothing is animated on the Cartoon Network show *Chowder* as you can see here:
+
 ![Chowder Texture](tenor.gif)
 
 As you can see, the texture is fixed in the frame, and as the character moves the texture stays in place. This is the idea we would like to implement, where you have a color array/pattern and as the balls pass through each of the regions the color is updated (ie. as the balls pass up the left side they are blue, as they go across the top they transition to red, and as the fall down the right side they transition to green, and repeat the cycle as they are circle juggled)
