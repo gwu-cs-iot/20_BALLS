@@ -66,7 +66,6 @@ def path(filename):
     cv2.destroyAllWindows()
 
 
-path("test_vids/bounce.mp4")
 
 
 
