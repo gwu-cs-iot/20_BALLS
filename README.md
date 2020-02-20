@@ -15,7 +15,7 @@ Information about how the juggler is throwing the balls will be gathered using a
 ### Performance Mode Ideas
 * **Left-Right lighting:** Balls thrown left to right light up one color, balls thrown right to left light up another color.
 * **Gradient lighting:** Balls light up in a gradient between two colors based on some characteristic about their flight path. Ex. ball height, ball speed, ball location(left to right), etc.
-* **Color array lighting:** Each location in the frame of the camera corresponds to a different color. As balls pass through a location, they light up to that color. Imagine this with 
+* **Color array lighting:** Each location in the frame of the camera corresponds to a different color. As balls pass through a location, they light up to that color. Imagine this with circle juggling:
 
 ![circle juggling](circlejuggle.gif)
 
