@@ -7,17 +7,18 @@ import cv2
 
 
 
-blueLower = (90,1,20)
-blueUpper = (135,255,255)
+blueLower = (90,0,20)
+blueUpper = (130,255,255)
 
 greenLower = (40,55,20)
 greenUpper = (95,255,255)
 
-pts = deque(maxlen=20)
+pts = deque(maxlen=100)
 
 vs = cv2.VideoCapture("test_vids/5ball.mp4")
-time.sleep(1.0)
 
+time.sleep(1.0)
+centers=[]
 while True:
     frame = vs.read()
     frame = frame[1]
@@ -36,7 +37,7 @@ while True:
     cnts = imutils.grab_contours(cnts)
     center = None
 
-    if len(cnts)>1:
+    if len(cnts)>=1:
         for cnt in cnts:
             M = cv2.moments(cnt)
             cX = int(M["m10"] / M["m00"])
@@ -48,7 +49,9 @@ while True:
             ((x, y), radius) = cv2.minEnclosingCircle(cnt)
             if radius > 10:
                 cv2.circle(frame,center,int(radius),(0,255,0),2)
-            pts.appendleft(center)
+                pts.appendleft(center)
+                centers.append(center) 
+
 
     cv2.imshow("Frame",frame)
     #cv2.imshow("Mask",mask)
