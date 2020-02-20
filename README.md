@@ -18,7 +18,7 @@ Information about how the juggler is throwing the balls will be gathered using a
 * **Color array lighting:** Each location in the frame of the camera corresponds to a different color. As balls pass through a location, they light up to that color. Imagine this with circle juggling:
 
 ![circle juggling](circlejuggle.gif =100x100)
-
+<img src="circlejuggle.gif" width="256" height="256" title="Circle Juggle">
 More info on this can be seen [here](https://www.libraryofjuggling.com/Tricks/3balltricks/Shower.html) where if done fast enough the balls would form a colorful circle.
 An example of what this might look like is something like how the textures of clothing is animated on the Cartoon Network show *Chowder* as you can see here:
 
