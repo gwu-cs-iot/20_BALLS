@@ -6,7 +6,7 @@ import time
 import cv2
 
 
-def trace(picname, fast=0):
+def trace(picname):
     blueLower = (90,1,20)
     blueUpper = (135,255,255)
 
@@ -49,14 +49,10 @@ def trace(picname, fast=0):
 
         cv2.imshow("Frame",frame)
         #cv2.imshow("Mask",mask)
-        if fast == 0:
-            key = cv2.waitKey(32) & 0xFF
-        if fast == 1:
-            key = cv2.waitKey(16) & 0xFF
+        key = cv2.waitKey(-1)
         if key == ord("q"):
             break
     cv2.destroyAllWindows()
-
 
 
 
