@@ -8,8 +8,8 @@ class Coords:
     x: float = 0.0
     y: float = 0.0
 
-    def to_tuple(self) -> Tuple[float, float]:
-        """ Returns these coordinates as a pair of floats. """
+    def to_tuple(self) -> Tuple[int, int]:
+        """ Returns these coordinates as a pair of integers for OpenCV. """
         return int(self.x), int(self.y)
 
 
