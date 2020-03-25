@@ -25,12 +25,10 @@ class BallState(Enum):
 class Circle:
     coords: Coords
     radius: float
-    center: Coords
 
-    def __init__(self, coords, radius, center):
+    def __init__(self, coords, radius):
         self.coords = coords
         self.radius = radius
-        self.center = center
 
     def intersects(self, c2: Circle, fuzzy_factor=1.0) -> bool:
         return math.sqrt((self.coords.x - c2.coords.x) ** 2 + (self.coords.y - c2.coords.y) ** 2) \
@@ -49,7 +47,7 @@ class BallCircle:
         self.state = BallState.UNDECLARED
         self.found = False
         self.squatFrames = 5
-        self.circle = Circle(Coords(), 0, (0,0))
+        self.circle = Circle(Coords(), 0)
 
 
 balls = []
@@ -94,7 +92,7 @@ def trace(picname):
                 # TODO remove upper bound?
                 if 10 < radius < 50:
                     foundBall = False
-                    blob = Circle(Coords(x, y), radius, center)
+                    blob = Circle(Coords(x, y), radius)
                     # Find a circle from the last frame intersecting with this one.
                     for prevBall in balls:
                         if prevBall.state is BallState.UNDECLARED:
@@ -138,11 +136,13 @@ def trace(picname):
                 if not b.found and b.state is not BallState.JUMPSQUAT:
                     b.state = BallState.CAUGHT
                 b.found = False
+                overlay = frame.copy()
                 if b.state is not BallState.CAUGHT:
                     if b.state is BallState.AIRBORNE:
-                        cv2.circle(frame, b.circle.center.to_tuple(), int(b.circle.radius), (0, 255, 0), 2)
+                        cv2.circle(overlay, b.circle.coords.to_tuple(), int(b.circle.radius), (0, 255, 0), -1)
                     if b.state is BallState.JUMPSQUAT: 
-                        cv2.circle(frame, b.circle.center.to_tuple(), int(b.circle.radius), (0, 0, 255), 2)
+                        cv2.circle(overlay, b.circle.coords.to_tuple(), int(b.circle.radius), (0, 0, 255), -1)
+                    frame = cv2.addWeighted(overlay, 0.4, frame, 0.6, 0)
                     cv2.putText(frame, b.ball.name, (int(b.circle.coords.x), int(b.circle.coords.y)), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), thickness=2)
 
         twentyxx.drawHud(frame, balls)

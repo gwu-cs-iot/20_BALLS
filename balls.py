@@ -10,7 +10,7 @@ class Coords:
 
     def to_tuple(self) -> Tuple[float, float]:
         """ Returns these coordinates as a pair of floats. """
-        return self.x, self.y
+        return int(self.x), int(self.y)
 
 
 @dataclass
