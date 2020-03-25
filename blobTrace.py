@@ -61,6 +61,7 @@ def trace(picname):
     blueUpper = (135,255,255)
 
     frameIndex = 1
+    catch_index = 0
 
     vs = cv2.VideoCapture(picname)
     time.sleep(1.0)
@@ -139,8 +140,9 @@ def trace(picname):
                         closestBall.jumpPoint = closestBall.circle.coords
 
             for b in balls:
-                if not b.found and b.state is not BallState.JUMPSQUAT:
+                if not b.found and b.state is BallState.AIRBORNE:
                     b.state = BallState.CAUGHT
+                    catch_index += 1
                 b.found = False
                 overlay = frame.copy()
                 if b.state is not BallState.CAUGHT:
@@ -155,6 +157,8 @@ def trace(picname):
 
         # TODO Magic numbers
         cv2.putText(frame, str(frameIndex), (0, 680), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0))
+        cv2.putText(frame, str("Catch Count:"), (100, 680), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0))
+        cv2.putText(frame, str(catch_index), (325, 680), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0))
 
         cv2.imshow("Frame", frame)
         cv2.imshow("Mask", mask)
@@ -164,4 +168,6 @@ def trace(picname):
 
         frameIndex += 1
 
+    c_per_frame = 60*catch_index/frameIndex
+    print("Catches per second is about:" + str(c_per_frame))
     cv2.destroyAllWindows()
