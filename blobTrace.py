@@ -17,7 +17,7 @@ import math
 NUM_BALLS = 3
 JUMP_Y_LIMIT = 75
 JUMP_X_LIMIT = 50
-
+FUZZY_FACTOR = 1.5
 
 class BallState(Enum):
     JUMPSQUAT = auto()
@@ -100,7 +100,7 @@ def trace(picname):
                     for prevBall in balls:
                         if prevBall.state is BallState.UNDECLARED:
                             continue
-                        if blob.intersects(prevBall.circle, fuzzy_factor=1.5):
+                        if blob.intersects(prevBall.circle, FUZZY_FACTOR):
                             # We have found the ball corresponding to this circle.
                             
                             # Updates the Ball circle to be the blob found to intersect
@@ -112,6 +112,9 @@ def trace(picname):
                                     prevBall.state = BallState.AIRBORNE
                                     prevBall.jumpPoint = None
                                     # NOTE Maybe move this
+                            if prevBall.state is BallState.CAUGHT:
+                                prevBall.state = BallState.JUMPSQUAT
+                                prevBall.jumpPoint = blob.coords
                             break
 
                     if not foundBall:
@@ -131,7 +134,8 @@ def trace(picname):
                                     closestDist = dist
                                     closestBall = prevBall
                         closestBall.circle = blob
-                        closestBall.state = BallState.JUMPSQUAT
+                        if closestBall.state is not BallState.AIRBORNE:
+                            closestBall.state = BallState.JUMPSQUAT
                         closestBall.jumpPoint = closestBall.circle.coords
 
             for b in balls:
@@ -153,6 +157,7 @@ def trace(picname):
         cv2.putText(frame, str(frameIndex), (0, 680), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0))
 
         cv2.imshow("Frame", frame)
+        cv2.imshow("Mask", mask)
         key = cv2.waitKey(-1)
         if key == ord("q"):
             break
