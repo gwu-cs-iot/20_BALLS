@@ -7,9 +7,8 @@ from dataclasses import dataclass
 
 from balls import Coords, Ball
 
-from imutils.video import VideoStream
-from collections import deque
-import numpy as np
+import twentyxx
+
 import imutils
 import time
 import cv2
@@ -26,9 +25,9 @@ class BallState(Enum):
 class Circle:
     coords: Coords
     radius: float
-    center: float
+    center: Coords
 
-    def __init__(self, coords, radius,center):
+    def __init__(self, coords, radius, center):
         self.coords = coords
         self.radius = radius
         self.center = center
@@ -44,11 +43,12 @@ class BallCircle:
     state: BallState
     found: bool
     squatFrames: int
+
     def __init__(self, ball: Ball):
         self.ball = ball
-        self.state= BallState.UNDECLARED
+        self.state = BallState.UNDECLARED
         self.found = False
-        self.squatFrames=5
+        self.squatFrames = 5
         self.circle = Circle(Coords(), 0, (0,0))
 
 
@@ -61,14 +61,6 @@ def trace(picname):
     blueLower = (90,1,20)
     blueUpper = (135,255,255)
 
-    greenLower = (40,55,20)
-    greenUpper = (95,255,255)
-
-    ballId = 'A'
-
-    thisFrameCircles = []
-    lastFrameCircles = []
-
     vs = cv2.VideoCapture(picname)
     time.sleep(1.0)
 
@@ -78,8 +70,8 @@ def trace(picname):
         if frame is None:
             break
         frame = imutils.resize(frame, width=700)
-        frame = imutils.rotate_bound(frame,90)
-        blur = cv2.GaussianBlur(frame, (11,11), 0)
+        frame = imutils.rotate_bound(frame, 90)
+        blur = cv2.GaussianBlur(frame, (11, 11), 0)
         hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
         
         mask = cv2.inRange(hsv, blueLower, blueUpper)
@@ -94,14 +86,14 @@ def trace(picname):
                 M = cv2.moments(cnt)
                 cX = int(M["m10"] / M["m00"])
                 cY = int(M["m01"] / M["m00"])
-                center = (cX, cY)
+                center = Coords(cX, cY)
 
                 cnt = cnt.astype("int")
                 ((x, y), radius) = cv2.minEnclosingCircle(cnt)
 
-                #TODO remove upper bound?
+                # TODO remove upper bound?
                 if 10 < radius < 50:
-                    foundBall= False
+                    foundBall = False
                     blob = Circle(Coords(x, y), radius, center)
                     # Find a circle from the last frame intersecting with this one.
                     for prevBall in balls:
@@ -124,8 +116,7 @@ def trace(picname):
                             break
 
                     if not foundBall:
-                        #thisFrameCircles.append((circle, Ball(ballId)))
-                        #TODO set state to jumpsquat, unknown ball
+                        # TODO set state to jumpsquat, unknown ball
                         closestBall = None
                         closestDist = -1
                         for prevBall in balls:
@@ -136,13 +127,12 @@ def trace(picname):
                             if prevBall.state is not BallState.AIRBORNE:
                                 ball_x = prevBall.circle.coords.x
                                 blob_x = blob.coords.x
-                                dist = abs(ball_x-blob_x)
-                                if dist<closestDist or closestDist<0:
+                                dist = abs(ball_x - blob_x)
+                                if dist < closestDist or closestDist < 0:
                                     closestDist = dist
                                     closestBall = prevBall
                         closestBall.circle = blob
                         closestBall.state = BallState.JUMPSQUAT
-
 
             for b in balls:
                 if not b.found and b.state is not BallState.JUMPSQUAT:
@@ -150,15 +140,12 @@ def trace(picname):
                 b.found = False
                 if b.state is not BallState.CAUGHT:
                     if b.state is BallState.AIRBORNE:
-                        cv2.circle(frame, b.circle.center, int(radius), (0, 255, 0), 2)
+                        cv2.circle(frame, b.circle.center.to_tuple(), int(b.circle.radius), (0, 255, 0), 2)
                     if b.state is BallState.JUMPSQUAT: 
-                        cv2.circle(frame, b.circle.center, int(radius), (0, 0, 255), 2)
+                        cv2.circle(frame, b.circle.center.to_tuple(), int(b.circle.radius), (0, 0, 255), 2)
                     cv2.putText(frame, b.ball.name, (int(b.circle.coords.x), int(b.circle.coords.y)), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), thickness=2)
 
-
-            #TODO Caught state?
-        lastFrameCircles = thisFrameCircles
-        thisFrameCircles = []
+        twentyxx.drawHud(frame, balls)
 
         cv2.imshow("Frame", frame)
         key = cv2.waitKey(-1)

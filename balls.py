@@ -1,10 +1,16 @@
 from dataclasses import dataclass
 
+from typing import Tuple
+
 
 @dataclass
 class Coords:
     x: float = 0.0
     y: float = 0.0
+
+    def to_tuple(self) -> Tuple[float, float]:
+        """ Returns these coordinates as a pair of floats. """
+        return self.x, self.y
 
 
 @dataclass
