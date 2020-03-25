@@ -15,6 +15,9 @@ import cv2
 import math
 
 NUM_BALLS = 3
+JUMP_Y_LIMIT = 75
+JUMP_X_LIMIT = 50
+
 
 class BallState(Enum):
     JUMPSQUAT = auto()
@@ -40,13 +43,12 @@ class BallCircle:
     circle: Optional[Circle]
     state: BallState
     found: bool
-    squatFrames: int
+    jumpPoint: Coords
 
     def __init__(self, ball: Ball):
         self.ball = ball
         self.state = BallState.UNDECLARED
         self.found = False
-        self.squatFrames = 5
         self.circle = Circle(Coords(), 0)
 
 
@@ -105,12 +107,10 @@ def trace(picname):
                             foundBall = True
                             prevBall.found = True
                             if prevBall.state == BallState.JUMPSQUAT:
-                                prevBall.squatFrames = prevBall.squatFrames - 1
-                                if prevBall.squatFrames == 0:
+                                if (blob.coords.y - prevBall.jumpPoint.y > JUMP_Y_LIMIT) or (abs(blob.coords.x - prevBall.jumpPoint.x > JUMP_X_LIMIT)):
                                     prevBall.state = BallState.AIRBORNE
-
+                                    prevBall.jumpPoint = None
                                     # NOTE Maybe move this
-                                    prevBall.squatFrames = 5
                             break
 
                     if not foundBall:
@@ -131,6 +131,7 @@ def trace(picname):
                                     closestBall = prevBall
                         closestBall.circle = blob
                         closestBall.state = BallState.JUMPSQUAT
+                        closestBall.jumpPoint = closestBall.circle.coords
 
             for b in balls:
                 if not b.found and b.state is not BallState.JUMPSQUAT:
