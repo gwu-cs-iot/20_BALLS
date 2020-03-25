@@ -1,5 +1,7 @@
 # BALLS
 
+![](mike_uhh.png)
+
 BALLS are logistical lighting spheres
 
 BALLS is a smart juggling balls platform that will function to both give
