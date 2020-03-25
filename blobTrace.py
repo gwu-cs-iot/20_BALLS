@@ -50,7 +50,7 @@ class BallCircle:
         self.state = BallState.UNDECLARED
         self.found = False
         self.circle = Circle(Coords(), 0)
-
+        self.jumpPoint = Coords()
 
 balls = []
 
@@ -107,7 +107,7 @@ def trace(picname):
                             foundBall = True
                             prevBall.found = True
                             if prevBall.state == BallState.JUMPSQUAT:
-                                if (blob.coords.y - prevBall.jumpPoint.y > JUMP_Y_LIMIT) or (abs(blob.coords.x - prevBall.jumpPoint.x > JUMP_X_LIMIT)):
+                                if (prevBall.jumpPoint.y -blob.coords.y  > JUMP_Y_LIMIT) or (abs(blob.coords.x - prevBall.jumpPoint.x > JUMP_X_LIMIT)):
                                     prevBall.state = BallState.AIRBORNE
                                     prevBall.jumpPoint = None
                                     # NOTE Maybe move this
