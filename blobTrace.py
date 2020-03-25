@@ -43,14 +43,13 @@ class BallCircle:
     circle: Optional[Circle]
     state: BallState
     found: bool
-    jumpPoint: Coords
+    jumpPoint: Optional[Coords] = None
 
     def __init__(self, ball: Ball):
         self.ball = ball
         self.state = BallState.UNDECLARED
         self.found = False
         self.circle = Circle(Coords(), 0)
-        self.jumpPoint = Coords()
 
 balls = []
 
@@ -60,6 +59,8 @@ for i in range(NUM_BALLS):
 def trace(picname):
     blueLower = (90,1,20)
     blueUpper = (135,255,255)
+
+    frameIndex = 1
 
     vs = cv2.VideoCapture(picname)
     time.sleep(1.0)
@@ -148,9 +149,14 @@ def trace(picname):
 
         twentyxx.drawHud(frame, balls)
 
+        # TODO Magic numbers
+        cv2.putText(frame, str(frameIndex), (0, 680), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0))
+
         cv2.imshow("Frame", frame)
         key = cv2.waitKey(-1)
         if key == ord("q"):
             break
+
+        frameIndex += 1
 
     cv2.destroyAllWindows()
