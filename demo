@@ -24,4 +24,8 @@ if not path.exists(file_arg):
 
 print(f'Loading video "{file_arg}".')
 
-blobTrace.trace(file_arg)
+try:
+    blobTrace.trace(file_arg)
+except KeyboardInterrupt:
+    import cv2
+    cv2.destroyAllWindows()
