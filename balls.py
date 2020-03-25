@@ -2,6 +2,8 @@ from dataclasses import dataclass
 
 from typing import Tuple
 
+import decimal
+
 
 @dataclass
 class Coords:
@@ -11,6 +13,10 @@ class Coords:
     def to_tuple(self) -> Tuple[int, int]:
         """ Returns these coordinates as a pair of integers for OpenCV. """
         return int(self.x), int(self.y)
+
+    def __str__(self):
+        trunc = lambda v: decimal.Decimal(str(v)).quantize(decimal.Decimal('.0'), rounding=decimal.ROUND_DOWN)
+        return f'({trunc(self.x)}, {trunc(self.y)})'
 
 
 @dataclass
