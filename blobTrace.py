@@ -15,20 +15,23 @@ import time
 import cv2
 import math
 
-NUM_BALLS = 3
+NUM_BALLS = 4
 
 class BallState(Enum):
     JUMPSQUAT = auto()
     AIRBORNE = auto()
     CAUGHT = auto()
+    UNDECLARED = auto()
 
 class Circle:
     coords: Coords
     radius: float
+    center: float
 
-    def __init__(self, coords, radius):
+    def __init__(self, coords, radius,center):
         self.coords = coords
         self.radius = radius
+        self.center = center
 
     def intersects(self, c2: Circle, fuzzy_factor=1.0) -> bool:
         return math.sqrt((self.coords.x - c2.coords.x) ** 2 + (self.coords.y - c2.coords.y) ** 2) \
@@ -39,11 +42,20 @@ class BallCircle:
     ball: Ball
     circle: Optional[Circle]
     state: BallState
+    found: bool
+    squatFrames: int
+    def __init__(self, ball: Ball):
+        self.ball = ball
+        self.state= BallState.UNDECLARED
+        self.found = False
+        self.squatFrames=5
+        self.circle = Circle(Coords(), 0, (0,0))
+
 
 balls = []
 
 for i in range(NUM_BALLS):
-    balls.append(BallCircle(Ball(chr(ord('A') + i)), None))
+    balls.append(BallCircle(Ball(chr(ord('A') + i))))
 
 def trace(picname):
     blueLower = (90,1,20)
@@ -76,7 +88,7 @@ def trace(picname):
 
         cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         cnts = imutils.grab_contours(cnts)
-
+        
         if len(cnts) > 1:
             for cnt in cnts:
                 M = cv2.moments(cnt)
@@ -86,24 +98,65 @@ def trace(picname):
 
                 cnt = cnt.astype("int")
                 ((x, y), radius) = cv2.minEnclosingCircle(cnt)
+
+                #TODO remove upper bound?
                 if 10 < radius < 50:
-                    foundCircle = False
-                    circle = Circle(Coords(x, y), radius)
+                    foundBall= False
+                    blob = Circle(Coords(x, y), radius, center)
                     # Find a circle from the last frame intersecting with this one.
-                    for c in lastFrameCircles:
-                        if circle.intersects(c[0], fuzzy_factor=1.5):
+                    for prevBall in balls:
+                        if prevBall.state is BallState.UNDECLARED:
+                            continue
+                        if blob.intersects(prevBall.circle, fuzzy_factor=1.5):
                             # We have found the ball corresponding to this circle.
-                            thisFrameCircles.append((circle, c[1]))
-                            foundCircle = True
+                            
+                            # Updates the Ball circle to be the blob found to intersect
+                            prevBall.circle = blob
+                            foundBall = True
+                            prevBall.found = True
+                            if prevBall.state == BallState.JUMPSQUAT:
+                                prevBall.squatFrames = prevBall.squatFrames - 1
+                                if prevBall.squatFrames == 0:
+                                    prevBall.state = BallState.AIRBORNE
+
+                                    # NOTE Maybe move this
+                                    prevBall.squatFrames = 5
                             break
 
-                    if not foundCircle:
-                        thisFrameCircles.append((circle, Ball(ballId)))
-                        ballId = chr((ord(ballId) + 1))
+                    if not foundBall:
+                        #thisFrameCircles.append((circle, Ball(ballId)))
+                        #TODO set state to jumpsquat, unknown ball
+                        closestBall = None
+                        closestDist = -1
+                        for prevBall in balls:
+                            if prevBall.state is BallState.UNDECLARED:
+                                closestBall = prevBall
+                                
+                                break
+                            if prevBall.state is not BallState.AIRBORNE:
+                                ball_x = prevBall.circle.coords.x
+                                blob_x = blob.coords.x
+                                dist = abs(ball_x-blob_x)
+                                if dist<closestDist or closestDist<0:
+                                    closestDist = dist
+                                    closestBall = prevBall
+                        closestBall.circle = blob
+                        closestBall.state = BallState.JUMPSQUAT
 
-                    cv2.circle(frame, center, int(radius), (0, 0, 255), 2)
-                    cv2.putText(frame, thisFrameCircles[-1][1].name, (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), thickness=2)
 
+            for b in balls:
+                if not b.found and b.state is not BallState.JUMPSQUAT:
+                    b.state = BallState.CAUGHT
+                b.found = False
+                if b.state is not BallState.CAUGHT:
+                    if b.state is BallState.AIRBORNE:
+                        cv2.circle(frame, b.circle.center, int(radius), (0, 255, 0), 2)
+                    if b.state is BallState.JUMPSQUAT: 
+                        cv2.circle(frame, b.circle.center, int(radius), (0, 0, 255), 2)
+                    cv2.putText(frame, b.ball.name, (int(b.circle.coords.x), int(b.circle.coords.y)), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), thickness=2)
+
+
+            #TODO Caught state?
         lastFrameCircles = thisFrameCircles
         thisFrameCircles = []
 
