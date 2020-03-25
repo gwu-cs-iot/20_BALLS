@@ -1,4 +1,9 @@
 from __future__ import annotations
+from typing import Optional
+
+from enum import Enum, auto
+
+from dataclasses import dataclass
 
 from balls import Coords, Ball
 
@@ -9,6 +14,13 @@ import imutils
 import time
 import cv2
 import math
+
+NUM_BALLS = 3
+
+class BallState(Enum):
+    JUMPSQUAT = auto()
+    AIRBORNE = auto()
+    CAUGHT = auto()
 
 class Circle:
     coords: Coords
@@ -22,7 +34,18 @@ class Circle:
         return math.sqrt((self.coords.x - c2.coords.x) ** 2 + (self.coords.y - c2.coords.y) ** 2) \
                <= (self.radius + c2.radius) * fuzzy_factor
 
-def trace(picname, fast=0):
+@dataclass
+class BallCircle:
+    ball: Ball
+    circle: Optional[Circle]
+    state: BallState
+
+balls = []
+
+for i in range(NUM_BALLS):
+    balls.append(BallCircle(Ball(chr(ord('A') + i)), None))
+
+def trace(picname):
     blueLower = (90,1,20)
     blueUpper = (135,255,255)
 
