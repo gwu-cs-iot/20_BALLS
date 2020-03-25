@@ -1,6 +1,6 @@
 # BALLS
 
-![](mike_uhh.png)
+![](res/mike_uhh.png)
 
 BALLS are logistical lighting spheres
 
