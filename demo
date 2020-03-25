@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+
+import sys
+from os import path
+
+import blobTrace
+
+if len(sys.argv) != 2:
+    print('One arugment is required: the name of the video to process.', file=sys.stderr)
+    sys.exit(1)
+
+file_arg = sys.argv[1]
+
+if not file_arg.endswith('.mp4'):
+    # Append video extension.
+    file_arg += '.mp4'
+
+if not path.exists(file_arg):
+    # Append the video folder if they just gave a filename.
+    file_arg = f'test_vids/{file_arg}'
+    if not path.exists(file_arg):
+        print(f'Video file "{file_arg}" not found.', file=sys.stderr)
+        sys.exit(1)
+
+print(f'Loading video "{file_arg}".')
+
+blobTrace.trace(file_arg)
