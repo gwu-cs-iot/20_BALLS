@@ -14,7 +14,7 @@ import time
 import cv2
 import math
 
-NUM_BALLS = 4
+NUM_BALLS = 3
 
 class BallState(Enum):
     JUMPSQUAT = auto()
