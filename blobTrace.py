@@ -76,7 +76,7 @@ def trace(picname, fast=0):
 
                     if not foundCircle:
                         thisFrameCircles.append((circle, Ball(ballId)))
-                        ballId = chr(ord(ballId) + 1)
+                        ballId = chr((ord(ballId) + 1))
 
                     cv2.circle(frame, center, int(radius), (0, 0, 255), 2)
                     cv2.putText(frame, thisFrameCircles[-1][1].name, (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), thickness=2)
