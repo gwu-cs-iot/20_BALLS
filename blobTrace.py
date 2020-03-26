@@ -1,60 +1,22 @@
 from __future__ import annotations
-from typing import Optional
 
-from enum import Enum, auto
-
-from dataclasses import dataclass
-
-from balls import Coords, Ball
+from balls import Coords, Circle, Ball
 
 import twentyxx
 
 import imutils
 import time
 import cv2
-import math
 
 NUM_BALLS = 3
 JUMP_Y_LIMIT = 75
 JUMP_X_LIMIT = 50
 FUZZY_FACTOR = 1.5
 
-class BallState(Enum):
-    JUMPSQUAT = auto()
-    AIRBORNE = auto()
-    CAUGHT = auto()
-    UNDECLARED = auto()
-
-class Circle:
-    coords: Coords
-    radius: float
-
-    def __init__(self, coords, radius):
-        self.coords = coords
-        self.radius = radius
-
-    def intersects(self, c2: Circle, fuzzy_factor=1.0) -> bool:
-        return math.sqrt((self.coords.x - c2.coords.x) ** 2 + (self.coords.y - c2.coords.y) ** 2) \
-               <= (self.radius + c2.radius) * fuzzy_factor
-
-@dataclass
-class BallCircle:
-    ball: Ball
-    circle: Optional[Circle]
-    state: BallState
-    found: bool
-    jumpPoint: Optional[Coords] = None
-
-    def __init__(self, ball: Ball):
-        self.ball = ball
-        self.state = BallState.UNDECLARED
-        self.found = False
-        self.circle = Circle(Coords(), 0)
-
 balls = []
 
 for i in range(NUM_BALLS):
-    balls.append(BallCircle(Ball(chr(ord('A') + i))))
+    balls.append(Ball(chr(ord('A') + i)))
 
 def trace(picname, startingFrame=0, drawHud=False):
     blueLower = (90,20,2)
@@ -99,8 +61,9 @@ def trace(picname, startingFrame=0, drawHud=False):
                     blob = Circle(Coords(x, y), radius)
                     # Find a circle from the last frame intersecting with this one.
                     for prevBall in balls:
-                        if prevBall.state is BallState.UNDECLARED:
+                        if prevBall.state is Ball.State.UNDECLARED:
                             continue
+
                         if blob.intersects(prevBall.circle, FUZZY_FACTOR):
                             # We have found the ball corresponding to this circle.
                             
@@ -108,13 +71,13 @@ def trace(picname, startingFrame=0, drawHud=False):
                             prevBall.circle = blob
                             foundBall = True
                             prevBall.found = True
-                            if prevBall.state == BallState.JUMPSQUAT:
-                                if (prevBall.jumpPoint.y -blob.coords.y  > JUMP_Y_LIMIT) or (abs(blob.coords.x - prevBall.jumpPoint.x > JUMP_X_LIMIT)):
-                                    prevBall.state = BallState.AIRBORNE
+                            if prevBall.state is Ball.State.JUMPSQUAT:
+                                if (prevBall.jumpPoint.y - blob.coords.y  > JUMP_Y_LIMIT) or (abs(blob.coords.x - prevBall.jumpPoint.x > JUMP_X_LIMIT)):
+                                    prevBall.state = Ball.State.AIRBORNE
                                     prevBall.jumpPoint = None
                                     # NOTE Maybe move this
-                            if prevBall.state is BallState.CAUGHT:
-                                prevBall.state = BallState.JUMPSQUAT
+                            elif prevBall.state is Ball.State.CAUGHT:
+                                prevBall.state = Ball.State.JUMPSQUAT
                                 prevBall.jumpPoint = blob.coords
                             break
 
@@ -122,36 +85,43 @@ def trace(picname, startingFrame=0, drawHud=False):
                         # TODO set state to jumpsquat, unknown ball
                         closestBall = None
                         closestDist = -1
+
                         for prevBall in balls:
-                            if prevBall.state is BallState.UNDECLARED:
+                            if prevBall.state is Ball.State.UNDECLARED:
                                 closestBall = prevBall
-                                
                                 break
-                            if prevBall.state is not BallState.AIRBORNE:
+
+                            if prevBall.state is not Ball.State.AIRBORNE:
                                 ball_x = prevBall.circle.coords.x
                                 blob_x = blob.coords.x
                                 dist = abs(ball_x - blob_x)
                                 if dist < closestDist or closestDist < 0:
                                     closestDist = dist
                                     closestBall = prevBall
+
                         closestBall.circle = blob
-                        if closestBall.state is not BallState.AIRBORNE:
-                            closestBall.state = BallState.JUMPSQUAT
+
+                        if closestBall.state is not Ball.State.AIRBORNE:
+                            closestBall.state = Ball.State.JUMPSQUAT
+
                         closestBall.jumpPoint = closestBall.circle.coords
 
             for b in balls:
-                if not b.found and b.state is BallState.AIRBORNE:
-                    b.state = BallState.CAUGHT
+                if not b.found and b.state is Ball.State.AIRBORNE:
+                    b.state = Ball.State.CAUGHT
                     catch_index += 1
+
                 b.found = False
                 overlay = frame.copy()
-                if b.state is not BallState.CAUGHT:
-                    if b.state is BallState.AIRBORNE:
+
+                if b.state is not Ball.State.CAUGHT and b.state is not Ball.State.UNDECLARED:
+                    if b.state is Ball.State.AIRBORNE:
                         cv2.circle(overlay, b.circle.coords.to_tuple(), int(b.circle.radius), (0, 255, 0), -1)
-                    if b.state is BallState.JUMPSQUAT: 
+                    elif b.state is Ball.State.JUMPSQUAT:
                         cv2.circle(overlay, b.circle.coords.to_tuple(), int(b.circle.radius), (0, 0, 255), -1)
+
                     frame = cv2.addWeighted(overlay, 0.4, frame, 0.6, 0)
-                    cv2.putText(frame, b.ball.name, (int(b.circle.coords.x), int(b.circle.coords.y)), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), thickness=2)
+                    cv2.putText(frame, b.name, b.circle.coords.to_tuple(), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), thickness=2)
 
         if drawHud:
             twentyxx.drawHud(frame, balls)
@@ -163,6 +133,7 @@ def trace(picname, startingFrame=0, drawHud=False):
 
         cv2.imshow("Frame", frame)
         cv2.imshow("Mask", mask)
+
         if startingFrame <= 0 or 0 < startingFrame <= frameIndex:
             # If startingFrame is defined, skip to that frame.
             key = cv2.waitKey(-1)
