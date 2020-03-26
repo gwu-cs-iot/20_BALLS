@@ -13,7 +13,6 @@ import imutils
 import time
 import cv2
 import math
-import copy
 
 NUM_BALLS = 3
 JUMP_Y_LIMIT = 75
