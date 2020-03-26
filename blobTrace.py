@@ -56,7 +56,7 @@ balls = []
 for i in range(NUM_BALLS):
     balls.append(BallCircle(Ball(chr(ord('A') + i))))
 
-def trace(picname):
+def trace(picname, startingFrame=0):
     blueLower = (90,20,2)
     blueUpper = (135,255,255)
 
@@ -162,9 +162,11 @@ def trace(picname):
 
         cv2.imshow("Frame", frame)
         cv2.imshow("Mask", mask)
-        key = cv2.waitKey(-1)
-        if key == ord("q"):
-            break
+        if startingFrame > 0 and frameIndex >= startingFrame:
+            # If startingFrame is defined, skip to that frame.
+            key = cv2.waitKey(-1)
+            if key == ord("q"):
+                break
 
         frameIndex += 1
 
