@@ -9,7 +9,7 @@ import blobTrace
 
 parser = argparse.ArgumentParser(description='Track juggling.')
 parser.add_argument('filename', metavar='FILE', help='the video file to run the tracking algorithm on')
-parser.add_argument('-f', '--frame', type=int)
+parser.add_argument('-f', '--frame', type=int, default=0, help='the index of the frame of the video to start rendering on')
 args = parser.parse_args()
 
 if not args.filename.endswith('.mp4'):

@@ -162,7 +162,7 @@ def trace(picname, startingFrame=0):
 
         cv2.imshow("Frame", frame)
         cv2.imshow("Mask", mask)
-        if startingFrame > 0 and frameIndex >= startingFrame:
+        if startingFrame <= 0 or 0 < startingFrame <= frameIndex:
             # If startingFrame is defined, skip to that frame.
             key = cv2.waitKey(-1)
             if key == ord("q"):
