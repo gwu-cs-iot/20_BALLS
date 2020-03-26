@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 
+import argparse
 import sys
 from os import path
 
-import argparse
+import cv2
 
 import blobTrace
 
 parser = argparse.ArgumentParser(description='Track juggling.')
 parser.add_argument('filename', metavar='FILE', help='the video file to run the tracking algorithm on')
-parser.add_argument('-f', '--frame', type=int, default=0, help='the index of the frame of the video to start rendering on')
+parser.add_argument('-f', '--frame', type=int, default=0,
+                    help='the index of the frame of the video to start rendering on')
 parser.add_argument('-d', '--draw-hud', dest='drawHud', action='store_true', default=False)
 args = parser.parse_args()
 
@@ -29,5 +31,4 @@ print(f'Loading video "{args.filename}".')
 try:
     blobTrace.trace(args.filename, startingFrame=args.frame, drawHud=args.drawHud)
 except KeyboardInterrupt:
-    import cv2
     cv2.destroyAllWindows()

@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-
-from typing import Tuple, Optional
-
 import decimal
 import math
+from dataclasses import dataclass
 from enum import Enum, auto
+from typing import Tuple, Optional
 
 
 @dataclass

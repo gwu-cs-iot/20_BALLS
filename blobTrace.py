@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from balls import Coords, Circle, Ball
+import time
+
+import cv2
+import imutils
 
 import twentyxx
-
-import imutils
-import time
-import cv2
+from balls import Coords, Circle, Ball
 
 NUM_BALLS = 3
 JUMP_Y_LIMIT = 75
@@ -18,9 +18,10 @@ balls = []
 for i in range(NUM_BALLS):
     balls.append(Ball(chr(ord('A') + i)))
 
+
 def trace(picname, startingFrame=0, drawHud=False):
-    blueLower = (90,20,2)
-    blueUpper = (135,255,255)
+    blueLower = (90, 20, 2)
+    blueUpper = (135, 255, 255)
 
     frameIndex = 1
     catch_index = 0
@@ -37,14 +38,14 @@ def trace(picname, startingFrame=0, drawHud=False):
         frame = imutils.rotate_bound(frame, 90)
         blur = cv2.GaussianBlur(frame, (11, 11), 0)
         hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
-        
+
         mask = cv2.inRange(hsv, blueLower, blueUpper)
         mask = cv2.erode(mask, None, iterations=2)
         mask = cv2.dilate(mask, None, iterations=2)
 
         cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         cnts = imutils.grab_contours(cnts)
-        
+
         if len(cnts) > 1:
             for cnt in cnts:
                 M = cv2.moments(cnt)
@@ -66,13 +67,14 @@ def trace(picname, startingFrame=0, drawHud=False):
 
                         if blob.intersects(prevBall.circle, FUZZY_FACTOR):
                             # We have found the ball corresponding to this circle.
-                            
+
                             # Updates the Ball circle to be the blob found to intersect
                             prevBall.circle = blob
                             foundBall = True
                             prevBall.found = True
                             if prevBall.state is Ball.State.JUMPSQUAT:
-                                if (prevBall.jumpPoint.y - blob.coords.y  > JUMP_Y_LIMIT) or (abs(blob.coords.x - prevBall.jumpPoint.x > JUMP_X_LIMIT)):
+                                if prevBall.jumpPoint.y - blob.coords.y > JUMP_Y_LIMIT \
+                                        or abs(blob.coords.x - prevBall.jumpPoint.x > JUMP_X_LIMIT):
                                     prevBall.state = Ball.State.AIRBORNE
                                     prevBall.jumpPoint = None
                                     # NOTE Maybe move this
@@ -121,7 +123,8 @@ def trace(picname, startingFrame=0, drawHud=False):
                         cv2.circle(overlay, b.circle.coords.to_tuple(), int(b.circle.radius), (0, 0, 255), -1)
 
                     frame = cv2.addWeighted(overlay, 0.4, frame, 0.6, 0)
-                    cv2.putText(frame, b.name, b.circle.coords.to_tuple(), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), thickness=2)
+                    cv2.putText(frame, b.name, b.circle.coords.to_tuple(), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0),
+                                thickness=2)
 
         if drawHud:
             twentyxx.drawHud(frame, balls)
@@ -142,6 +145,6 @@ def trace(picname, startingFrame=0, drawHud=False):
 
         frameIndex += 1
 
-    c_per_frame = 60*catch_index/frameIndex
+    c_per_frame = 60 * catch_index / frameIndex
     print("Catches per second is about:" + str(c_per_frame))
     cv2.destroyAllWindows()

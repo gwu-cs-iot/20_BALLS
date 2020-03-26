@@ -10,6 +10,7 @@ FONT_THICKNESS = 1
 
 LINE_SPACING = 3
 
+
 def drawHud(frame, ballcircles):
     line_y = LABEL_HEIGHT_HEADER
 
@@ -17,4 +18,5 @@ def drawHud(frame, ballcircles):
 
     for bc in ballcircles:
         line_y += LABEL_HEIGHT + LINE_SPACING
-        cv2.putText(frame, f'{bc.ball.name}: {bc.state.name} pos:{str(bc.circle.coords)} jump:{str(bc.jumpPoint)}', (0, line_y), FONT_FACE, FONT_SIZE, (255, 0, 0), thickness=FONT_THICKNESS)
+        cv2.putText(frame, f'{bc.ball.name}: {bc.state.name} pos:{str(bc.circle.coords)} jump:{str(bc.jumpPoint)}',
+                    (0, line_y), FONT_FACE, FONT_SIZE, (255, 0, 0), thickness=FONT_THICKNESS)
