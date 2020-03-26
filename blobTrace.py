@@ -13,6 +13,7 @@ import imutils
 import time
 import cv2
 import math
+import copy
 
 NUM_BALLS = 3
 JUMP_Y_LIMIT = 75
@@ -56,7 +57,7 @@ balls = []
 for i in range(NUM_BALLS):
     balls.append(BallCircle(Ball(chr(ord('A') + i))))
 
-def trace(picname, startingFrame=0):
+def trace(picname, startingFrame=0, drawHud=False):
     blueLower = (90,20,2)
     blueUpper = (135,255,255)
 
@@ -153,7 +154,8 @@ def trace(picname, startingFrame=0):
                     frame = cv2.addWeighted(overlay, 0.4, frame, 0.6, 0)
                     cv2.putText(frame, b.ball.name, (int(b.circle.coords.x), int(b.circle.coords.y)), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), thickness=2)
 
-        twentyxx.drawHud(frame, balls)
+        if drawHud:
+            twentyxx.drawHud(frame, balls)
 
         # TODO Magic numbers
         cv2.putText(frame, str(frameIndex), (0, 680), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0))
