@@ -57,7 +57,7 @@ for i in range(NUM_BALLS):
     balls.append(BallCircle(Ball(chr(ord('A') + i))))
 
 def trace(picname):
-    blueLower = (90,1,20)
+    blueLower = (90,20,2)
     blueUpper = (135,255,255)
 
     frameIndex = 1
