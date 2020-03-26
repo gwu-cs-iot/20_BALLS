@@ -3,29 +3,30 @@
 import sys
 from os import path
 
+import argparse
+
 import blobTrace
 
-if len(sys.argv) != 2:
-    print('One arugment is required: the name of the video to process.', file=sys.stderr)
-    sys.exit(1)
+parser = argparse.ArgumentParser(description='Track juggling.')
+parser.add_argument('filename', metavar='FILE', help='the video file to run the tracking algorithm on')
+parser.add_argument('-f', '--frame', type=int)
+args = parser.parse_args()
 
-file_arg = sys.argv[1]
-
-if not file_arg.endswith('.mp4'):
+if not args.filename.endswith('.mp4'):
     # Append video extension.
-    file_arg += '.mp4'
+    args.filename += '.mp4'
 
-if not path.exists(file_arg):
+if not path.exists(args.filename):
     # Append the video folder if they just gave a filename.
-    file_arg = f'test_vids/{file_arg}'
-    if not path.exists(file_arg):
-        print(f'Video file "{file_arg}" not found.', file=sys.stderr)
+    args.filename = f'test_vids/{args.filename}'
+    if not path.exists(args.filename):
+        print(f'Video file "{args.filename}" not found.', file=sys.stderr)
         sys.exit(1)
 
-print(f'Loading video "{file_arg}".')
+print(f'Loading video "{args.filename}".')
 
 try:
-    blobTrace.trace(file_arg)
+    blobTrace.trace(args.filename, startingFrame=args.frame)
 except KeyboardInterrupt:
     import cv2
     cv2.destroyAllWindows()
