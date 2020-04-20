@@ -23,11 +23,18 @@ class Coords:
 
 @dataclass
 class MovementVector:
-    direction: float = 0.0
-    """ The direction of movement, in radians. """
+    #X velocity
+    xvel: float = 0.0
+    #X velocity
+    yvel: float = 0.0
 
-    magnitude: float = 0.0
-    """ The rate of movement, in pixels per frame. """
+    def average(self,new_x, new_y, alpha_factor):
+        self.xvel = alpha_factor * self.xvel + (1-alpha_factor) * new_x
+        self.yvel = alpha_factor * self.yvel + (1-alpha_factor) * new_y
+    def caught(self):
+        self.xvel = 0
+        self.yvel = 0
+
 
 
 class Circle:
@@ -64,6 +71,7 @@ class Ball:
     """ An identifier for this ball instance. Only used for debugging purposes. """
 
     movement: MovementVector = MovementVector()
+
     """
     The last-recorded movement vector for this ball. Defined such that a direction of 0 radians equates to movement
     to the right relative to the observer.

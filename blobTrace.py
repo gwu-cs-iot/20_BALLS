@@ -12,7 +12,8 @@ NUM_BALLS = 3
 JUMP_Y_LIMIT = 75
 JUMP_X_LIMIT = 50
 FUZZY_FACTOR = 1.5
-
+#alpha factor for running avg. higher = old values mean more
+ALPHA_FACTOR = .4
 balls = []
 
 for i in range(NUM_BALLS):
@@ -69,6 +70,10 @@ def trace(picname, startingFrame=0, drawHud=False):
                             # We have found the ball corresponding to this circle.
 
                             # Updates the Ball circle to be the blob found to intersect
+                            x_velocity = center.x - prevBall.circle.coords.x
+                            y_velocity = center.y - prevBall.circle.coords.y
+                            prevBall.movement.average(x_velocity,y_velocity,ALPHA_FACTOR)
+
                             prevBall.circle = blob
                             foundBall = True
                             prevBall.found = True
@@ -111,6 +116,7 @@ def trace(picname, startingFrame=0, drawHud=False):
             for b in balls:
                 if not b.found and b.state is Ball.State.AIRBORNE:
                     b.state = Ball.State.CAUGHT
+                    b.movement.caught()
                     catch_index += 1
 
                 b.found = False
