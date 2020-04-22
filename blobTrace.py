@@ -70,9 +70,9 @@ def trace(picname, startingFrame=0, drawHud=False):
                             # We have found the ball corresponding to this circle.
 
                             # Updates the Ball circle to be the blob found to intersect
-                            x_velocity = center.x - prevBall.circle.coords.x
-                            y_velocity = center.y - prevBall.circle.coords.y
-                            prevBall.movement.average(x_velocity,y_velocity,ALPHA_FACTOR)
+                            x_velocity = blob.coords.x - prevBall.circle.coords.x
+                            y_velocity = blob.coords.y - prevBall.circle.coords.y
+                            prevBall.movement.average(x_velocity, y_velocity, ALPHA_FACTOR)
 
                             prevBall.circle = blob
                             foundBall = True

@@ -22,5 +22,3 @@ def drawHud(frame, ballcircles):
                     (0, line_y), FONT_FACE, FONT_SIZE, (255, 0, 0), thickness=FONT_THICKNESS)
 
         cv2.putText(frame, f'xvel:{str(bc.movement.xvel)} yvel:{str(bc.movement.yvel)}', (0,line_y+13), FONT_FACE, FONT_SIZE, (255,0,0), thickness=FONT_THICKNESS)
-
-

@@ -23,14 +23,14 @@ class Coords:
 
 @dataclass
 class MovementVector:
-    #X velocity
     xvel: float = 0.0
-    #X velocity
+
     yvel: float = 0.0
 
-    def average(self,new_x, new_y, alpha_factor):
+    def average(self, new_x, new_y, alpha_factor):
         self.xvel = alpha_factor * self.xvel + (1-alpha_factor) * new_x
         self.yvel = alpha_factor * self.yvel + (1-alpha_factor) * new_y
+
     def caught(self):
         self.xvel = 0
         self.yvel = 0
@@ -70,7 +70,7 @@ class Ball:
     name: str
     """ An identifier for this ball instance. Only used for debugging purposes. """
 
-    movement: MovementVector = MovementVector()
+    movement: MovementVector
 
     """
     The last-recorded movement vector for this ball. Defined such that a direction of 0 radians equates to movement
@@ -98,7 +98,7 @@ class Ball:
             raise ValueError('Ball name cannot contain whitespace')
 
         self.name = name
-        self.coords = Coords()
+        self.movement = MovementVector()
 
     def __str__(self):
         return f'{self.name}({self.coords.x, self.coords.y})'
