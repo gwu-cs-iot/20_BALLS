@@ -5,7 +5,7 @@ import math
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Tuple, Optional
-
+PEAK_FACTOR=1.5
 
 @dataclass
 class Coords:
@@ -34,6 +34,11 @@ class MovementVector:
     def caught(self):
         self.xvel = 0
         self.yvel = 0
+    def is_peak(self):
+        if abs(self.yvel) < PEAK_FACTOR:
+            return True
+        else:
+            return False
 
 
 
@@ -71,6 +76,8 @@ class Ball:
     """ An identifier for this ball instance. Only used for debugging purposes. """
 
     movement: MovementVector
+    "Whether the ball is at the apex of its arc or not, defined by y velocity"
+    peak: bool = False
 
     """
     The last-recorded movement vector for this ball. Defined such that a direction of 0 radians equates to movement

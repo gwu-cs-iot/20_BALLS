@@ -73,7 +73,7 @@ def trace(picname, startingFrame=0, drawHud=False):
                             x_velocity = blob.coords.x - prevBall.circle.coords.x
                             y_velocity = blob.coords.y - prevBall.circle.coords.y
                             prevBall.movement.average(x_velocity, y_velocity, ALPHA_FACTOR)
-
+                            prevBall.peak = prevBall.movement.is_peak()
                             prevBall.circle = blob
                             foundBall = True
                             prevBall.found = True
@@ -123,7 +123,9 @@ def trace(picname, startingFrame=0, drawHud=False):
                 overlay = frame.copy()
 
                 if b.state is not Ball.State.CAUGHT and b.state is not Ball.State.UNDECLARED:
-                    if b.state is Ball.State.AIRBORNE:
+                    if b.peak is True: 
+                        cv2.circle(overlay, b.circle.coords.to_tuple(), int(b.circle.radius), (255, 255, 255), -1)
+                    elif b.state is Ball.State.AIRBORNE:
                         cv2.circle(overlay, b.circle.coords.to_tuple(), int(b.circle.radius), (0, 255, 0), -1)
                     elif b.state is Ball.State.JUMPSQUAT:
                         cv2.circle(overlay, b.circle.coords.to_tuple(), int(b.circle.radius), (0, 0, 255), -1)
