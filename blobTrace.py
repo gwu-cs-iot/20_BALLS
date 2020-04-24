@@ -7,6 +7,7 @@ import imutils
 
 import twentyxx
 from balls import Coords, Circle, Ball
+from arc import Arc
 
 NUM_BALLS = 3
 JUMP_Y_LIMIT = 75
@@ -14,6 +15,7 @@ JUMP_X_LIMIT = 50
 FUZZY_FACTOR = 1.5
 #alpha factor for running avg. higher = old values mean more
 ALPHA_FACTOR = .4
+DRAW_ARCS = False
 balls = []
 
 for i in range(NUM_BALLS):
@@ -29,6 +31,7 @@ def trace(picname, startingFrame=0, drawHud=False):
 
     vs = cv2.VideoCapture(picname)
     time.sleep(1.0)
+    B_arc = None
 
     while True:
         frame = vs.read()
@@ -75,12 +78,19 @@ def trace(picname, startingFrame=0, drawHud=False):
                             prevBall.movement.average(x_velocity, y_velocity, ALPHA_FACTOR)
                             prevBall.peak = prevBall.movement.is_peak()
                             prevBall.circle = blob
+                            if prevBall.name is "B" and B_arc is not None:
+                                B_arc.add(blob.coords.x,blob.coords.y)
+                            
                             foundBall = True
                             prevBall.found = True
                             if prevBall.state is Ball.State.JUMPSQUAT:
                                 if prevBall.jumpPoint.y - blob.coords.y > JUMP_Y_LIMIT \
                                         or abs(blob.coords.x - prevBall.jumpPoint.x > JUMP_X_LIMIT):
                                     prevBall.state = Ball.State.AIRBORNE
+                                    #TODO remove this/ make it better
+                                    if prevBall.name is 'B':
+                                       B_arc = Arc("B") 
+                                       B_arc.add(blob.coords.x, blob.coords.y)
                                     prevBall.jumpPoint = None
                                     # NOTE Maybe move this
                             elif prevBall.state is Ball.State.CAUGHT:
@@ -116,6 +126,9 @@ def trace(picname, startingFrame=0, drawHud=False):
             for b in balls:
                 if not b.found and b.state is Ball.State.AIRBORNE:
                     b.state = Ball.State.CAUGHT
+                    if b.name is "B" and B_arc is not None and DRAW_ARCS is True:
+                        B_arc.plot()
+                    B_arc = None
                     b.movement.caught()
                     catch_index += 1
 
