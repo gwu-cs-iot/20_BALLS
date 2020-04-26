@@ -4,6 +4,7 @@ import time
 
 import cv2
 import imutils
+import math
 
 import twentyxx
 from balls import Coords, Circle, Ball
@@ -122,13 +123,15 @@ def trace(picname, startingFrame=0, drawHud=False):
                                 closestBall = prevBall
                                 break
 
-                            if prevBall.state is not Ball.State.AIRBORNE:
-                                ball_x = prevBall.circle.coords.x
-                                blob_x = blob.coords.x
-                                dist = abs(ball_x - blob_x)
-                                if dist < closestDist or closestDist < 0:
-                                    closestDist = dist
-                                    closestBall = prevBall
+                            #if prevBall.state is not Ball.State.AIRBORNE:
+                            ball_x = prevBall.circle.coords.x
+                            blob_x = blob.coords.x
+                            ball_y = prevBall.circle.coords.y
+                            blob_y = blob.coords.y
+                            dist = math.sqrt((ball_x - blob_x)**2 + (ball_y - blob_y)**2)
+                            if dist < closestDist or closestDist < 0:
+                                closestDist = dist
+                                closestBall = prevBall
 
                         closestBall.circle = blob
 
