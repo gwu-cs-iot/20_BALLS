@@ -7,7 +7,7 @@ import imutils
 
 import twentyxx
 from balls import Coords, Circle, Ball
-from arc import Arc
+from arc import Arc, Arc_array 
 
 NUM_BALLS = 3
 JUMP_Y_LIMIT = 75
@@ -17,6 +17,7 @@ FUZZY_FACTOR = 1.5
 ALPHA_FACTOR = .4
 DRAW_ARCS = False
 balls = []
+CUTOFF_THROW = 400
 
 for i in range(NUM_BALLS):
     balls.append(Ball(chr(ord('A') + i)))
@@ -32,6 +33,7 @@ def trace(picname, startingFrame=0, drawHud=False):
     vs = cv2.VideoCapture(picname)
     time.sleep(1.0)
     B_arc = None
+    B_arc_array = Arc_array("B")
 
     while True:
         frame = vs.read()
@@ -76,8 +78,20 @@ def trace(picname, startingFrame=0, drawHud=False):
                             x_velocity = blob.coords.x - prevBall.circle.coords.x
                             y_velocity = blob.coords.y - prevBall.circle.coords.y
                             prevBall.movement.average(x_velocity, y_velocity, ALPHA_FACTOR)
-                            prevBall.peak = prevBall.movement.is_peak()
-                            prevBall.circle = blob
+                            if prevBall.state == Ball.State.AIRBORNE and prevBall.throwstate == Ball.ThrowState.UNRECOGNIZED:
+                                if x_velocity > 0:
+                                    prevBall.throwstate = Ball.ThrowState.LEFTRISING
+                                else:
+                                    prevBall.throwstate = Ball.ThrowState.RIGHTRISING
+                            if blob.coords.y < CUTOFF_THROW:
+                                prevBall.peak = prevBall.movement.is_peak()
+                                prevBall.circle = blob
+                                if prevBall.peak is True:
+                                    if prevBall.throwstate == Ball.ThrowState.LEFTRISING:
+                                        prevBall.throwstate = Ball.ThrowState.LEFTFALLING 
+
+                                    if prevBall.throwstate == Ball.ThrowState.RIGHTRISING:
+                                        prevBall.throwstate = Ball.ThrowState.RIGHTFALLING
                             if prevBall.name is "B" and B_arc is not None:
                                 B_arc.add(blob.coords.x,blob.coords.y)
                             
@@ -126,11 +140,16 @@ def trace(picname, startingFrame=0, drawHud=False):
             for b in balls:
                 if not b.found and b.state is Ball.State.AIRBORNE:
                     b.state = Ball.State.CAUGHT
+                    if b.throwstate is Ball.ThrowState.LEFTFALLING or b.throwstate is Ball.ThrowState.RIGHTFALLING :
+                        catch_index += 1
+                    b.throwstate = Ball.ThrowState.UNRECOGNIZED
                     if b.name is "B" and B_arc is not None and DRAW_ARCS is True:
                         B_arc.plot()
-                    B_arc = None
+                    if B_arc is not None and b.name is "B":
+                        print("added ball")
+                        B_arc_array.add_arc(B_arc)
+                        B_arc = None
                     b.movement.caught()
-                    catch_index += 1
 
                 b.found = False
                 overlay = frame.copy()
@@ -167,5 +186,6 @@ def trace(picname, startingFrame=0, drawHud=False):
         frameIndex += 1
 
     c_per_frame = 60 * catch_index / frameIndex
+    B_arc_array.plot_arcs()
     print("Catches per second is about:" + str(c_per_frame))
     cv2.destroyAllWindows()

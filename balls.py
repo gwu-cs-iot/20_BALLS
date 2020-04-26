@@ -72,6 +72,12 @@ class Ball:
         CAUGHT = auto()
         UNDECLARED = auto()
 
+    class ThrowState(Enum):
+        LEFTRISING = auto()
+        RIGHTRISING = auto()
+        LEFTFALLING = auto()
+        RIGHTFALLING = auto()
+        UNRECOGNIZED = auto()
     name: str
     """ An identifier for this ball instance. Only used for debugging purposes. """
 
@@ -92,6 +98,7 @@ class Ball:
 
     state: State = State.UNDECLARED
     """ The ball's current state in the juggling cycle. """
+    throwstate: ThrowState = ThrowState.UNRECOGNIZED
 
     found: bool = False
     """ Whether this ball has been mapped to a blob from the current frame. Used in the blob detection process. """

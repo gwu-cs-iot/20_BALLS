@@ -44,3 +44,18 @@ class Arc:
         plt.plot(x, ffit(x))
         plt.show()
 
+
+class Arc_array:
+    def __init__(self, name: str):
+        self.arc_list = []
+        self.name = name
+    def add_arc(self,arc):
+        self.arc_list.append(arc)
+    def plot_arcs(self):
+        for arc in self.arc_list:
+            x = arc.arcVectorX[0:arc.n_values]
+            y = arc.arcVectorY[0:arc.n_values]
+            coefs = np.polynomial.polynomial.polyfit(x,y,10)
+            ffit = np.polynomial.polynomial.Polynomial(coefs)
+            plt.plot(x, ffit(x))
+        plt.show()
