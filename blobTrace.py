@@ -20,7 +20,7 @@ DRAW_ARCS = False
 balls = []
 CUTOFF_THROW = 400
 
-Color_Names = { 'A': (100,255,100), 'B': (255,100,100), 'C': (100,100,255) }
+Color_Names = { 'A': (255,50,50), 'B': (40,255,100), 'C': (100,100,255) }
 
 for i in range(NUM_BALLS):
     balls.append(Ball(chr(ord('A') + i)))

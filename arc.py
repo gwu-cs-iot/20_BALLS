@@ -7,10 +7,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
 
+name_plot = { 'A': 'b', 'B': 'g', 'C': 'r'}
 class Arc:
     n_values = 0
     def __init__(self, name: str):
         #TODO more robust method than just having a 50 sized array
+        self.name = name
         self.arcVectorX = np.zeros((50), dtype = float)
         self.arcVectorY = np.zeros((50), dtype = float)
         #There is a better way to do this but I wanna test stuff quick
@@ -38,7 +40,6 @@ class Arc:
         #slices in python are [inclusive,exclusive] for some reason
         x = self.arcVectorX[0:self.n_values]
         y = self.arcVectorY[0:self.n_values]
-        ax.scatter(x, y, color='g')
         coefs = np.polynomial.polynomial.polyfit(x,y,10)
         ffit = np.polynomial.polynomial.Polynomial(coefs)
         plt.plot(x, ffit(x))
@@ -48,14 +49,16 @@ class Arc:
 class Arc_array:
     def __init__(self, name: str):
         self.arc_list = []
+        self.color_list = []
         self.name = name
     def add_arc(self,arc):
         self.arc_list.append(arc)
+        self.color_list.append(name_plot[arc.name])
     def plot_arcs(self):
-        for arc in self.arc_list:
+        for (arc, color) in zip(self.arc_list, self.color_list):
             x = arc.arcVectorX[0:arc.n_values]
             y = arc.arcVectorY[0:arc.n_values]
             coefs = np.polynomial.polynomial.polyfit(x,y,10)
             ffit = np.polynomial.polynomial.Polynomial(coefs)
-            plt.plot(x, ffit(x))
+            plt.plot(x, ffit(x), color)
         plt.show()
