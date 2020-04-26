@@ -5,6 +5,7 @@ import time
 import cv2
 import imutils
 import math
+import numpy as np
 
 import twentyxx
 from balls import Coords, Circle, Ball
@@ -80,9 +81,13 @@ def trace(picname, startingFrame=0, drawHud=False):
                             # We have found the ball corresponding to this circle.
 
                             # Updates the Ball circle to be the blob found to intersect
+
+                            #Calculates x and y velocity of the intersecting ball
                             x_velocity = blob.coords.x - prevBall.circle.coords.x
                             y_velocity = blob.coords.y - prevBall.circle.coords.y
                             prevBall.movement.average(x_velocity, y_velocity, ALPHA_FACTOR)
+
+                            # Uses calculated velocity to determine throwstate
                             if prevBall.state == Ball.State.AIRBORNE and prevBall.throwstate == Ball.ThrowState.UNRECOGNIZED:
                                 if x_velocity > 0:
                                     prevBall.throwstate = Ball.ThrowState.LEFTRISING
@@ -97,28 +102,36 @@ def trace(picname, startingFrame=0, drawHud=False):
 
                                     if prevBall.throwstate == Ball.ThrowState.RIGHTRISING:
                                         prevBall.throwstate = Ball.ThrowState.RIGHTFALLING
-                            if prevBall.name is "A" and A_arc is not None:
+
+                            # Log the coords of the ball into the arc trace
+                            if prevBall.name == "A" and A_arc is not None:
                                 A_arc.add(blob.coords.x,blob.coords.y)
-                            if prevBall.name is "B" and B_arc is not None:
+                            if prevBall.name == "B" and B_arc is not None:
                                 B_arc.add(blob.coords.x,blob.coords.y)
-                            if prevBall.name is "C" and C_arc is not None:
+                            if prevBall.name == "C" and C_arc is not None:
                                 C_arc.add(blob.coords.x,blob.coords.y)
                         
-                            
+                            # Set the ball as found
                             foundBall = True
                             prevBall.found = True
+                            
+                            # Add the coords to the trail deque
+                            prevBall.trail_x.append(blob.coords.x)
+                            prevBall.trail_y.append(blob.coords.y)
+
+                            # Recognized Ball is in JUMPSQUAT:
                             if prevBall.state is Ball.State.JUMPSQUAT:
                                 if prevBall.jumpPoint.y - blob.coords.y > JUMP_Y_LIMIT \
                                         or abs(blob.coords.x - prevBall.jumpPoint.x > JUMP_X_LIMIT):
                                     prevBall.state = Ball.State.AIRBORNE
                                     #TODO remove this/ make it better
-                                    if prevBall.name is 'A':
+                                    if prevBall.name == "A":
                                        A_arc = Arc("A") 
                                        A_arc.add(blob.coords.x, blob.coords.y)
-                                    if prevBall.name is 'B':
+                                    if prevBall.name == "B":
                                        B_arc = Arc("B") 
                                        B_arc.add(blob.coords.x, blob.coords.y)
-                                    if prevBall.name is 'C':
+                                    if prevBall.name == "C":
                                        C_arc = Arc("C") 
                                        C_arc.add(blob.coords.x, blob.coords.y)
                                     prevBall.jumpPoint = None
@@ -161,30 +174,32 @@ def trace(picname, startingFrame=0, drawHud=False):
                     if b.throwstate is Ball.ThrowState.LEFTFALLING or b.throwstate is Ball.ThrowState.RIGHTFALLING :
                         catch_index += 1
                     b.throwstate = Ball.ThrowState.UNRECOGNIZED
-                    if b.name is "A" and A_arc is not None and DRAW_ARCS is True:
+                    if b.name == "A" and A_arc is not None and DRAW_ARCS is True:
                         A_arc.plot()
-                    if A_arc is not None and b.name is "A":
+                    if A_arc is not None and b.name == "A":
                         print("added ball")
                         Arc_arr.add_arc(A_arc)
                         A_arc = None
-                    if b.name is "B" and B_arc is not None and DRAW_ARCS is True:
+                    if b.name == "B" and B_arc is not None and DRAW_ARCS is True:
                         B_arc.plot()
-                    if B_arc is not None and b.name is "B":
+                    if B_arc is not None and b.name == "B":
                         print("added ball")
                         Arc_arr.add_arc(B_arc)
                         B_arc = None
-                    if b.name is "C" and C_arc is not None and DRAW_ARCS is True:
+                    if b.name == "C" and C_arc is not None and DRAW_ARCS is True:
                         C_arc.plot()
-                    if C_arc is not None and b.name is "C":
+                    if C_arc is not None and b.name == "C":
                         print("added ball")
                         Arc_arr.add_arc(C_arc)
                         C_arc = None
                     b.movement.caught()
-
+                    b.trail_x.clear()
+                    b.trail_y.clear()
                 b.found = False
                 overlay = frame.copy()
 
                 if b.state is not Ball.State.CAUGHT and b.state is not Ball.State.UNDECLARED:
+                    # Draw ball overlays
                     if b.peak is True: 
                         cv2.circle(overlay, b.circle.coords.to_tuple(), int(b.circle.radius), (255, 255, 255), -1)
                     elif b.state is Ball.State.AIRBORNE:
@@ -193,6 +208,15 @@ def trace(picname, startingFrame=0, drawHud=False):
                         cv2.circle(overlay, b.circle.coords.to_tuple(), int(b.circle.radius), (0, 0, 255), -1)
 
                     frame = cv2.addWeighted(overlay, 0.4, frame, 0.6, 0)
+
+                    # Draw ball trails
+                    for b in balls:
+                        for i in range(1, len(b.trail_x)):
+                            if b.trail_x[i - 1] is None or b.trail_x[i] is None:
+                                continue
+                            thickness = int(np.sqrt(10 / float(i + 1)) * 2.5)
+                            cv2.line(frame, (int(b.trail_x[i-1]), int(b.trail_y[i-1])), (int(b.trail_x[i]), int(b.trail_y[i])), Color_Names[b.name], thickness)
+
                     #TODO something with different balls having different colored letters
                     cv2.putText(frame, b.name, b.circle.coords.to_tuple(), cv2.FONT_HERSHEY_SIMPLEX, 2, Color_Names[b.name],
                                 thickness=2)

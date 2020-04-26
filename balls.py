@@ -5,6 +5,7 @@ import math
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Tuple, Optional
+from collections import deque
 PEAK_FACTOR=1.5
 
 @dataclass
@@ -106,6 +107,9 @@ class Ball:
     jumpPoint: Optional[Coords] = None
     """ The location at which the ball first appeared after being caught. """
 
+    trail_x: deque
+    trail_y: deque
+
     def __init__(self, name: str):
         name = name.strip()
         if len(name.split()) > 1:
@@ -113,6 +117,8 @@ class Ball:
 
         self.name = name
         self.movement = MovementVector()
+        self.trail_x = deque([], maxlen=10)
+        self.trail_y = deque([], maxlen=10)
 
     def __str__(self):
         return f'{self.name}({self.coords.x, self.coords.y})'
