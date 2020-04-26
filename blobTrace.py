@@ -20,6 +20,8 @@ DRAW_ARCS = False
 balls = []
 CUTOFF_THROW = 400
 
+Color_Names = { 'A': (100,255,100), 'B': (255,100,100), 'C': (100,100,255) }
+
 for i in range(NUM_BALLS):
     balls.append(Ball(chr(ord('A') + i)))
 
@@ -33,8 +35,10 @@ def trace(picname, startingFrame=0, drawHud=False):
 
     vs = cv2.VideoCapture(picname)
     time.sleep(1.0)
+    A_arc = None
     B_arc = None
-    B_arc_array = Arc_array("B")
+    C_arc = None
+    Arc_arr = Arc_array("Arc")
 
     while True:
         frame = vs.read()
@@ -64,7 +68,7 @@ def trace(picname, startingFrame=0, drawHud=False):
                 ((x, y), radius) = cv2.minEnclosingCircle(cnt)
 
                 # TODO remove upper bound?
-                if 10 < radius < 50:
+                if 5 < radius < 50:
                     foundBall = False
                     blob = Circle(Coords(x, y), radius)
                     # Find a circle from the last frame intersecting with this one.
@@ -93,8 +97,13 @@ def trace(picname, startingFrame=0, drawHud=False):
 
                                     if prevBall.throwstate == Ball.ThrowState.RIGHTRISING:
                                         prevBall.throwstate = Ball.ThrowState.RIGHTFALLING
+                            if prevBall.name is "A" and A_arc is not None:
+                                A_arc.add(blob.coords.x,blob.coords.y)
                             if prevBall.name is "B" and B_arc is not None:
                                 B_arc.add(blob.coords.x,blob.coords.y)
+                            if prevBall.name is "C" and C_arc is not None:
+                                C_arc.add(blob.coords.x,blob.coords.y)
+                        
                             
                             foundBall = True
                             prevBall.found = True
@@ -103,9 +112,15 @@ def trace(picname, startingFrame=0, drawHud=False):
                                         or abs(blob.coords.x - prevBall.jumpPoint.x > JUMP_X_LIMIT):
                                     prevBall.state = Ball.State.AIRBORNE
                                     #TODO remove this/ make it better
+                                    if prevBall.name is 'A':
+                                       A_arc = Arc("A") 
+                                       A_arc.add(blob.coords.x, blob.coords.y)
                                     if prevBall.name is 'B':
                                        B_arc = Arc("B") 
                                        B_arc.add(blob.coords.x, blob.coords.y)
+                                    if prevBall.name is 'C':
+                                       C_arc = Arc("C") 
+                                       C_arc.add(blob.coords.x, blob.coords.y)
                                     prevBall.jumpPoint = None
                                     # NOTE Maybe move this
                             elif prevBall.state is Ball.State.CAUGHT:
@@ -146,12 +161,24 @@ def trace(picname, startingFrame=0, drawHud=False):
                     if b.throwstate is Ball.ThrowState.LEFTFALLING or b.throwstate is Ball.ThrowState.RIGHTFALLING :
                         catch_index += 1
                     b.throwstate = Ball.ThrowState.UNRECOGNIZED
+                    if b.name is "A" and A_arc is not None and DRAW_ARCS is True:
+                        A_arc.plot()
+                    if A_arc is not None and b.name is "A":
+                        print("added ball")
+                        Arc_arr.add_arc(A_arc)
+                        A_arc = None
                     if b.name is "B" and B_arc is not None and DRAW_ARCS is True:
                         B_arc.plot()
                     if B_arc is not None and b.name is "B":
                         print("added ball")
-                        B_arc_array.add_arc(B_arc)
+                        Arc_arr.add_arc(B_arc)
                         B_arc = None
+                    if b.name is "C" and C_arc is not None and DRAW_ARCS is True:
+                        C_arc.plot()
+                    if C_arc is not None and b.name is "C":
+                        print("added ball")
+                        Arc_arr.add_arc(C_arc)
+                        C_arc = None
                     b.movement.caught()
 
                 b.found = False
@@ -166,7 +193,8 @@ def trace(picname, startingFrame=0, drawHud=False):
                         cv2.circle(overlay, b.circle.coords.to_tuple(), int(b.circle.radius), (0, 0, 255), -1)
 
                     frame = cv2.addWeighted(overlay, 0.4, frame, 0.6, 0)
-                    cv2.putText(frame, b.name, b.circle.coords.to_tuple(), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0),
+                    #TODO something with different balls having different colored letters
+                    cv2.putText(frame, b.name, b.circle.coords.to_tuple(), cv2.FONT_HERSHEY_SIMPLEX, 2, Color_Names[b.name],
                                 thickness=2)
 
         if drawHud:
@@ -189,6 +217,6 @@ def trace(picname, startingFrame=0, drawHud=False):
         frameIndex += 1
 
     c_per_frame = 60 * catch_index / frameIndex
-    B_arc_array.plot_arcs()
+    Arc_arr.plot_arcs()
     print("Catches per second is about:" + str(c_per_frame))
     cv2.destroyAllWindows()
