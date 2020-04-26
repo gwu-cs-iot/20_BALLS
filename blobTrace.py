@@ -210,12 +210,11 @@ def trace(picname, startingFrame=0, drawHud=False):
                     frame = cv2.addWeighted(overlay, 0.4, frame, 0.6, 0)
 
                     # Draw ball trails
-                    for b in balls:
-                        for i in range(1, len(b.trail_x)):
-                            if b.trail_x[i - 1] is None or b.trail_x[i] is None:
-                                continue
-                            thickness = int(np.sqrt(10 / float(i + 1)) * 2.5)
-                            cv2.line(frame, (int(b.trail_x[i-1]), int(b.trail_y[i-1])), (int(b.trail_x[i]), int(b.trail_y[i])), Color_Names[b.name], thickness)
+                    for i in range(1, len(b.trail_x)):
+                        if b.trail_x[i - 1] is None or b.trail_x[i] is None:
+                            continue
+                        thickness = int(np.sqrt(10 / float(i + 1)) * 2.5)
+                        cv2.line(frame, (int(b.trail_x[i-1]), int(b.trail_y[i-1])), (int(b.trail_x[i]), int(b.trail_y[i])), Color_Names[b.name], thickness)
 
                     #TODO something with different balls having different colored letters
                     cv2.putText(frame, b.name, b.circle.coords.to_tuple(), cv2.FONT_HERSHEY_SIMPLEX, 2, Color_Names[b.name],
