@@ -27,7 +27,7 @@ def trace(picname, startingFrame=0, drawHud=False):
     frameIndex = 1
     catch_index = 0
 
-    vs = cv2.VideoCapture(picname)
+    vs = cv2.VideoCapture(0 if picname is None else picname)
     time.sleep(1.0)
 
     while True:

@@ -9,24 +9,25 @@ import cv2
 import blobTrace
 
 parser = argparse.ArgumentParser(description='Track juggling.')
-parser.add_argument('filename', metavar='FILE', help='the video file to run the tracking algorithm on')
+parser.add_argument('filename', metavar='FILE', help='the video file to run the tracking algorithm on', nargs='?')
 parser.add_argument('-f', '--frame', type=int, default=0,
                     help='the index of the frame of the video to start rendering on')
 parser.add_argument('-d', '--draw-hud', dest='drawHud', action='store_true', default=False)
 args = parser.parse_args()
 
-if not args.filename.endswith('.mp4'):
-    # Append video extension.
-    args.filename += '.mp4'
-
-if not path.exists(args.filename):
-    # Append the video folder if they just gave a filename.
-    args.filename = f'test_vids/{args.filename}'
+if args.filename is not None:
+    if not args.filename.endswith('.mp4'):
+        # Append video extension.
+        args.filename += '.mp4'
     if not path.exists(args.filename):
-        print(f'Video file "{args.filename}" not found.', file=sys.stderr)
-        sys.exit(1)
-
-print(f'Loading video "{args.filename}".')
+        # Append the video folder if they just gave a filename.
+        args.filename = f'test_vids/{args.filename}'
+        if not path.exists(args.filename):
+            print(f'Video file "{args.filename}" not found.', file=sys.stderr)
+            sys.exit(1)
+    print(f'Loading video "{args.filename}".')
+else:
+    print('Using camera for video input.')
 
 try:
     blobTrace.trace(args.filename, startingFrame=args.frame, drawHud=args.drawHud)
