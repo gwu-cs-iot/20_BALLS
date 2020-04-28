@@ -5,7 +5,8 @@ import math
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Tuple, Optional
-
+from collections import deque
+PEAK_FACTOR=1.5
 
 @dataclass
 class Coords:
@@ -34,6 +35,11 @@ class MovementVector:
     def caught(self):
         self.xvel = 0
         self.yvel = 0
+    def is_peak(self):
+        if abs(self.yvel) < PEAK_FACTOR:
+            return True
+        else:
+            return False
 
 
 
@@ -67,10 +73,18 @@ class Ball:
         CAUGHT = auto()
         UNDECLARED = auto()
 
+    class ThrowState(Enum):
+        LEFTRISING = auto()
+        RIGHTRISING = auto()
+        LEFTFALLING = auto()
+        RIGHTFALLING = auto()
+        UNRECOGNIZED = auto()
     name: str
     """ An identifier for this ball instance. Only used for debugging purposes. """
 
     movement: MovementVector
+    "Whether the ball is at the apex of its arc or not, defined by y velocity"
+    peak: bool = False
 
     """
     The last-recorded movement vector for this ball. Defined such that a direction of 0 radians equates to movement
@@ -85,12 +99,16 @@ class Ball:
 
     state: State = State.UNDECLARED
     """ The ball's current state in the juggling cycle. """
+    throwstate: ThrowState = ThrowState.UNRECOGNIZED
 
     found: bool = False
     """ Whether this ball has been mapped to a blob from the current frame. Used in the blob detection process. """
 
     jumpPoint: Optional[Coords] = None
     """ The location at which the ball first appeared after being caught. """
+
+    trail_x: deque
+    trail_y: deque
 
     def __init__(self, name: str):
         name = name.strip()
@@ -99,6 +117,8 @@ class Ball:
 
         self.name = name
         self.movement = MovementVector()
+        self.trail_x = deque([], maxlen=10)
+        self.trail_y = deque([], maxlen=10)
 
     def __str__(self):
         return f'{self.name}({self.coords.x, self.coords.y})'
