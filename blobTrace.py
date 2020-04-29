@@ -6,6 +6,7 @@ import cv2
 import imutils
 import math
 import numpy as np
+import time
 
 import twentyxx
 from balls import Coords, Circle, Ball
@@ -20,8 +21,8 @@ ALPHA_FACTOR = .4
 DRAW_ARCS = False
 balls = []
 CUTOFF_THROW = 400
-REAL_TIME = False
-SHOW_MASK = False
+REAL_TIME = True
+SHOW_MASK = True
 
 Color_Names = { 'A': (255,50,50), 'B': (40,255,100), 'C': (100,100,255) }
 
@@ -30,6 +31,7 @@ for i in range(NUM_BALLS):
 
 
 def trace(picname, startingFrame=0, drawHud=False):
+    start_time = time.time()
     blueLower = (90, 20, 2)
     blueUpper = (135, 255, 255)
 
@@ -51,12 +53,13 @@ def trace(picname, startingFrame=0, drawHud=False):
         frame = imutils.resize(frame, width=700)
         if picname is not None:
             frame = imutils.rotate_bound(frame, 90)
-        blur = cv2.GaussianBlur(frame, (11, 11), 0)
+        blur = cv2.GaussianBlur(frame, (3, 3), 0)
+        #blur = cv2.medianBlur(frame, 13)
         hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
 
         mask = cv2.inRange(hsv, blueLower, blueUpper)
-        mask = cv2.erode(mask, None, iterations=2)
-        mask = cv2.dilate(mask, None, iterations=2)
+        mask = cv2.erode(mask, None, iterations=1)
+        mask = cv2.dilate(mask, None, iterations=1)
 
         cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         cnts = imutils.grab_contours(cnts)
@@ -244,7 +247,7 @@ def trace(picname, startingFrame=0, drawHud=False):
         if startingFrame <= 0 or 0 < startingFrame <= frameIndex:
             # If startingFrame is defined, skip to that frame.
             if REAL_TIME:
-                key = cv2.waitKey(int((1/60)*1000))
+                key = cv2.waitKey(1)
             else:
                 key = cv2.waitKey(-1)
             if key == ord("q"):
@@ -252,6 +255,8 @@ def trace(picname, startingFrame=0, drawHud=False):
 
         frameIndex += 1
 
+    end_time = time.time()
+    print(end_time - start_time)
     c_per_frame = 60 * catch_index / frameIndex
     Arc_arr.plot_arcs()
     print("Catches per second is about:" + str(c_per_frame))
