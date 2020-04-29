@@ -102,6 +102,12 @@ def trace(picname, startingFrame=0, drawHud=False):
 
                                     if prevBall.throwstate == Ball.ThrowState.RIGHTRISING:
                                         prevBall.throwstate = Ball.ThrowState.RIGHTFALLING
+                            elif prevBall.movement.is_peak() and (prevBall.throwstate == Ball.ThrowState.LEFTFALLING or prevBall.throwstate == Ball.ThrowState.RIGHTFALLING):
+                               prevBall.state = Ball.State.CAUGHT 
+                               foundBall = True
+                               prevBall.found = True
+                               break
+
 
                             # Log the coords of the ball into the arc trace
                             if prevBall.name == "A" and A_arc is not None:
