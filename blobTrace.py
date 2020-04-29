@@ -49,7 +49,8 @@ def trace(picname, startingFrame=0, drawHud=False):
         if frame is None:
             break
         frame = imutils.resize(frame, width=700)
-        frame = imutils.rotate_bound(frame, 90)
+        if picname is not None:
+            frame = imutils.rotate_bound(frame, 90)
         blur = cv2.GaussianBlur(frame, (11, 11), 0)
         hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
 
@@ -156,6 +157,8 @@ def trace(picname, startingFrame=0, drawHud=False):
                                 closestBall = prevBall
                                 break
 
+                            if prevBall.found:
+                                continue
                             #if prevBall.state is not Ball.State.AIRBORNE:
                             ball_x = prevBall.circle.coords.x
                             blob_x = blob.coords.x
@@ -165,13 +168,13 @@ def trace(picname, startingFrame=0, drawHud=False):
                             if dist < closestDist or closestDist < 0:
                                 closestDist = dist
                                 closestBall = prevBall
+                        if closestBall is  not None:
+                            closestBall.circle = blob
 
-                        closestBall.circle = blob
+                            if closestBall.state is not Ball.State.AIRBORNE:
+                                closestBall.state = Ball.State.JUMPSQUAT
 
-                        if closestBall.state is not Ball.State.AIRBORNE:
-                            closestBall.state = Ball.State.JUMPSQUAT
-
-                        closestBall.jumpPoint = closestBall.circle.coords
+                            closestBall.jumpPoint = closestBall.circle.coords
 
             for b in balls:
                 if not b.found and b.state is Ball.State.AIRBORNE:
@@ -201,7 +204,6 @@ def trace(picname, startingFrame=0, drawHud=False):
                     b.movement.caught()
                     b.trail_x.clear()
                     b.trail_y.clear()
-                b.found = False
                 overlay = frame.copy()
 
                 if b.state is not Ball.State.CAUGHT and b.state is not Ball.State.UNDECLARED:
@@ -210,7 +212,7 @@ def trace(picname, startingFrame=0, drawHud=False):
                         cv2.circle(overlay, b.circle.coords.to_tuple(), int(b.circle.radius), (255, 255, 255), -1)
                     elif b.state is Ball.State.AIRBORNE:
                         cv2.circle(overlay, b.circle.coords.to_tuple(), int(b.circle.radius), (0, 255, 0), -1)
-                    elif b.state is Ball.State.JUMPSQUAT:
+                    elif b.state is Ball.State.JUMPSQUAT and b.found:
                         cv2.circle(overlay, b.circle.coords.to_tuple(), int(b.circle.radius), (0, 0, 255), -1)
 
                     frame = cv2.addWeighted(overlay, 0.4, frame, 0.6, 0)
@@ -222,9 +224,10 @@ def trace(picname, startingFrame=0, drawHud=False):
                         thickness = int(np.sqrt(10 / float(i + 1)) * 2.5)
                         cv2.line(frame, (int(b.trail_x[i-1]), int(b.trail_y[i-1])), (int(b.trail_x[i]), int(b.trail_y[i])), Color_Names[b.name], thickness)
 
-                    #TODO something with different balls having different colored letters
-                    cv2.putText(frame, b.name, b.circle.coords.to_tuple(), cv2.FONT_HERSHEY_SIMPLEX, 2, Color_Names[b.name],
-                                thickness=2)
+                    if b.found:
+                        cv2.putText(frame, b.name, b.circle.coords.to_tuple(), cv2.FONT_HERSHEY_SIMPLEX, 2, Color_Names[b.name],
+                                    thickness=2)
+                b.found = False
 
         if drawHud:
             twentyxx.drawHud(frame, balls)

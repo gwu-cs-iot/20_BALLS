@@ -17,8 +17,9 @@ def drawHud(frame, ballcircles):
     cv2.putText(frame, 'Ball states', (0, line_y), FONT_FACE_HEADER, FONT_SIZE, (255, 0, 0), thickness=FONT_THICKNESS)
 
     for bc in ballcircles:
-        line_y += LABEL_HEIGHT + LINE_SPACING
-        cv2.putText(frame, f'{bc.name}: {bc.state.name} {bc.throwstate.name} pos:{str(bc.circle.coords)} jump:{str(bc.jumpPoint)}',
-                    (0, line_y), FONT_FACE, FONT_SIZE, (255, 0, 0), thickness=FONT_THICKNESS)
+        if bc.circle is not None:
+            line_y += LABEL_HEIGHT + LINE_SPACING
+            cv2.putText(frame, f'{bc.name}: {bc.state.name} {bc.throwstate.name} pos:{str(bc.circle.coords)} jump:{str(bc.jumpPoint)}',
+                        (0, line_y), FONT_FACE, FONT_SIZE, (255, 0, 0), thickness=FONT_THICKNESS)
 
-        cv2.putText(frame, f'xvel:{str(bc.movement.xvel)} yvel:{str(bc.movement.yvel)}', (0,line_y+13), FONT_FACE, FONT_SIZE, (255,0,0), thickness=FONT_THICKNESS)
+            cv2.putText(frame, f'xvel:{str(bc.movement.xvel)} yvel:{str(bc.movement.yvel)}', (0,line_y+13), FONT_FACE, FONT_SIZE, (255,0,0), thickness=FONT_THICKNESS)
