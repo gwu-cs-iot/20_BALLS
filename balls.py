@@ -63,6 +63,9 @@ class Circle:
                <= (self.radius + c2.radius) * fuzzy_factor
 
 
+
+
+
 class Ball:
     """ Data representation of a physical juggling ball. """
 
@@ -122,3 +125,21 @@ class Ball:
 
     def __str__(self):
         return f'{self.name}({self.coords.x, self.coords.y})'
+
+
+    #Series of functions for ThrowState
+    def is_rising(self):
+        if self.throwstate == self.ThrowState.LEFTRISING or self.throwstate == self.ThrowState.RIGHTRISING:
+            return True
+        else:
+            return False
+    def is_falling(self):
+        if self.throwstate == self.ThrowState.LEFTFALLING or self.throwstate == self.ThrowState.RIGHTFALLING:
+            return True
+        else:
+            return False
+    def peaked(self):
+        if self.throwstate == self.ThrowState.LEFTRISING:
+            self.throwstate = self.ThrowState.LEFTFALLING
+        elif self.throwstate == self.ThrowState.RIGHTRISING:
+            self.throwstate = self.ThrowState.RIGHTFALLING

@@ -20,6 +20,8 @@ ALPHA_FACTOR = .4
 DRAW_ARCS = False
 balls = []
 CUTOFF_THROW = 400
+REAL_TIME = False
+SHOW_MASK = False
 
 Color_Names = { 'A': (255,50,50), 'B': (40,255,100), 'C': (100,100,255) }
 
@@ -97,13 +99,10 @@ def trace(picname, startingFrame=0, drawHud=False):
                                 prevBall.peak = prevBall.movement.is_peak()
                                 prevBall.circle = blob
                                 if prevBall.peak is True:
-                                    if prevBall.throwstate == Ball.ThrowState.LEFTRISING:
-                                        prevBall.throwstate = Ball.ThrowState.LEFTFALLING 
-
-                                    if prevBall.throwstate == Ball.ThrowState.RIGHTRISING:
-                                        prevBall.throwstate = Ball.ThrowState.RIGHTFALLING
-                            elif prevBall.movement.is_peak() and (prevBall.throwstate == Ball.ThrowState.LEFTFALLING or prevBall.throwstate == Ball.ThrowState.RIGHTFALLING):
+                                    prevBall.peaked()
+                            elif prevBall.movement.is_peak() and prevBall.is_falling(): 
                                prevBall.state = Ball.State.CAUGHT 
+                               prevBall.throwstate = prevBall.ThrowState.UNRECOGNIZED
                                foundBall = True
                                prevBall.found = True
                                break
@@ -177,9 +176,10 @@ def trace(picname, startingFrame=0, drawHud=False):
             for b in balls:
                 if not b.found and b.state is Ball.State.AIRBORNE:
                     b.state = Ball.State.CAUGHT
-                    if b.throwstate is Ball.ThrowState.LEFTFALLING or b.throwstate is Ball.ThrowState.RIGHTFALLING :
+                    if b.is_falling():
                         catch_index += 1
                     b.throwstate = Ball.ThrowState.UNRECOGNIZED
+                    #TODO deal with this gross section I made :-(
                     if b.name == "A" and A_arc is not None and DRAW_ARCS is True:
                         A_arc.plot()
                     if A_arc is not None and b.name == "A":
@@ -235,11 +235,15 @@ def trace(picname, startingFrame=0, drawHud=False):
         cv2.putText(frame, str(catch_index), (325, 680), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0))
 
         cv2.imshow("Frame", frame)
-        cv2.imshow("Mask", mask)
+        if SHOW_MASK:
+            cv2.imshow("Mask", mask)
 
         if startingFrame <= 0 or 0 < startingFrame <= frameIndex:
             # If startingFrame is defined, skip to that frame.
-            key = cv2.waitKey(-1)
+            if REAL_TIME:
+                key = cv2.waitKey(int((1/60)*1000))
+            else:
+                key = cv2.waitKey(-1)
             if key == ord("q"):
                 break
 
