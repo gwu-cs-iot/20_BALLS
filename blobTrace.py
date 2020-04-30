@@ -12,7 +12,7 @@ import twentyxx
 from balls import Coords, Circle, Ball
 from arc import Arc, Arc_array 
 
-NUM_BALLS = 3
+NUM_BALLS = 5
 JUMP_Y_LIMIT = 75
 JUMP_X_LIMIT = 50
 FUZZY_FACTOR = 1.5
@@ -21,10 +21,10 @@ ALPHA_FACTOR = .4
 DRAW_ARCS = False
 balls = []
 CUTOFF_THROW = 400
-REAL_TIME = True
+REAL_TIME = False
 SHOW_MASK = True
 
-Color_Names = { 'A': (255,50,50), 'B': (40,255,100), 'C': (100,100,255) }
+Color_Names = { 'A': (255,50,50), 'B': (40,255,100), 'C': (100,100,255), 'D': (100,100,100), 'E': (200,200,200)}
 
 for i in range(NUM_BALLS):
     balls.append(Ball(chr(ord('A') + i)))
@@ -34,6 +34,7 @@ def trace(picname, startingFrame=0, drawHud=False):
     start_time = time.time()
     blueLower = (90, 20, 2)
     blueUpper = (135, 255, 255)
+ #   blueLower = (100, 100, 0)
 
     frameIndex = 1
     catch_index = 0
@@ -154,6 +155,8 @@ def trace(picname, startingFrame=0, drawHud=False):
                         # TODO set state to jumpsquat, unknown ball
                         closestBall = None
                         closestDist = -1
+                        blob_x = blob.coords.x
+                        blob_y = blob.coords.y
 
                         for prevBall in balls:
                             if prevBall.state is Ball.State.UNDECLARED:
@@ -162,11 +165,12 @@ def trace(picname, startingFrame=0, drawHud=False):
 
                             if prevBall.found:
                                 continue
-                            #if prevBall.state is not Ball.State.AIRBORNE:
-                            ball_x = prevBall.circle.coords.x
-                            blob_x = blob.coords.x
-                            ball_y = prevBall.circle.coords.y
-                            blob_y = blob.coords.y
+                            if prevBall.movement.xvel != 0 and prevBall.state == Ball.State.AIRBORNE:
+                                ball_x = prevBall.circle.coords.x + prevBall.movement.xvel
+                                ball_y = prevBall.circle.coords.y + prevBall.movement.yvel
+                            else: 
+                                ball_x = prevBall.circle.coords.x
+                                ball_y = prevBall.circle.coords.y
                             dist = math.sqrt((ball_x - blob_x)**2 + (ball_y - blob_y)**2)
                             if dist < closestDist or closestDist < 0:
                                 closestDist = dist
